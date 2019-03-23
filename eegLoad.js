@@ -104,5 +104,5 @@ function poll(x){
 
 eeg = new eegLoad();
 poll(eeg);
-eeg.connect();
+document.getElementById("connect").onclick = function(){ eeg.connect();};
 
