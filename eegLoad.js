@@ -5,13 +5,17 @@ class eegLoad {
     constructor(){
         this.bufferSize = 2000;
         this.weight = 0.9;
+        this.weight2 = 0.95;
+        this.weight3 = 0.99;
         this.buffer = [];
         this.alpha = 0;
         this.beta = 0;
         this.theta = 0;
         this.gamma = 0;
         this.delta = 0;
-        this.engagement; 
+        this.engagement = 0.15;
+        this.eng2 = 0.15;
+        this.eng3 = 0.15; 
         this.battery = 0;
         this.temperature = 0;
         let ref = this;
@@ -36,7 +40,7 @@ class eegLoad {
                 let sum = alpha + beta + gamma + delta  + theta;
 
                 let wavg = (original, next) => original * ref.weight + (next || 0) * (1 - ref.weight);
-
+                let wavg2 = (original,next,w) => original * w + (next || 0) *(1-w);
                 let wa = alpha/sum;
                 let wb = beta/sum;
                 let wg = gamma/sum;
@@ -50,6 +54,8 @@ class eegLoad {
                 ref.delta = wavg(ref.delta,wd);
                 ref.theta = wavg(ref.theta,wt);
                 ref.engagement = wavg(ref.engagement,eng);
+                ref.eng2 = wavg2(ref.eng3,wa,ref.weight2);
+                ref.eng3 = wavg2(ref.eng3,wa,ref.weight3);
             },
 
             (status) => {
@@ -90,6 +96,13 @@ class eegLoad {
     getEngagement(){
         return this.engagement;
     }
+    getState(){
+        if(this.alpha > this.eng2){
+            if(this.eng2> this.eng3) return 3;
+            return 2;
+        }
+        return 1;
+    }
 }
 function poll(x){
     setInterval(function(){
@@ -98,7 +111,7 @@ function poll(x){
         document.getElementById('delta').innerText = x.getDelta();
         document.getElementById('theta').innerText = x.getTheta();
         document.getElementById('gamma').innerText = x.getGamma();
-        document.getElementById('eng').innerText = x.getEngagement();
+        document.getElementById('eng').innerText = x.getState();
     }, 500);
 }
 
